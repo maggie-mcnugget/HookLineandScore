@@ -6,6 +6,8 @@ public class MainMenu : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
 
+    private bool isMuted = false;
+
     private void Start()
     {
         // Get the score from the previous game. If there isn't one yet, use 0.
@@ -26,5 +28,19 @@ public class MainMenu : MonoBehaviour
 
         // Closes the game when running the built application
         Application.Quit();
+    }
+
+    public void ToggleMute()
+    {
+        isMuted = !isMuted;
+
+        if (isMuted)
+        {
+            AudioListener.volume = 0f;
+        }
+        else
+        {
+            AudioListener.volume = 1f;
+        }
     }
 }

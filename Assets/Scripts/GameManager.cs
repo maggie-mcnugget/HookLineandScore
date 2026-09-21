@@ -46,9 +46,14 @@ public class GameManager : MonoBehaviour
     private bool isDragging = false;
     private bool waitingForCast = false;
     private bool hasBobberInWater = false;
+    private bool waitingForNextPress = false;
 
     private GameObject currentBobber;
 
+    //For sound effects
+    public SoundEffects soundEffects;
+
+    public GameObject aimingArea;
 
     private void Start()
     {
@@ -63,12 +68,31 @@ public class GameManager : MonoBehaviour
     {
         if (isDragging)
         {
-            UpdateAim(Input.mousePosition);
+            Debug.Log("Mouse position: " + Input.mousePosition);
 
-            // Wait for the player to click to actually cast, The EventSystem check stops clicks on UI buttons from casting
-            if (waitingForCast &&
-                Input.GetMouseButtonDown(0) &&
-                !EventSystem.current.IsPointerOverGameObject())
+            UpdateAim(GetPointerPosition());
+
+            // Ignore the original press that opened the aiming
+            // and wait until that press has been released.
+            if (waitingForNextPress)
+            {
+                if (Input.touchCount > 0)
+                {
+                    if (Input.GetTouch(0).phase == TouchPhase.Ended ||
+                        Input.GetTouch(0).phase == TouchPhase.Canceled)
+                    {
+                        waitingForNextPress = false;
+                    }
+                }
+                else if (Input.GetMouseButtonUp(0))
+                {
+                    waitingForNextPress = false;
+                }
+            }
+
+            // Once the original press has been released,
+            // the next press finishes the cast.
+            else if (waitingForCast && PointerDown())
             {
                 waitingForCast = false;
                 FinishAim();
@@ -140,8 +164,11 @@ public class GameManager : MonoBehaviour
 
         isDragging = true;
         waitingForCast = true;
+        waitingForNextPress = true;
 
         trajectoryLine.enabled = true;
+
+        aimingArea.SetActive(true);
     }
 
     public void UpdateAim(Vector2 fingerPosition)
@@ -179,6 +206,10 @@ public class GameManager : MonoBehaviour
         isDragging = false;
 
         trajectoryLine.enabled = false;
+
+        aimingArea.SetActive(false);
+
+        soundEffects.PlayCastSound();
 
         Cast();
     }
@@ -232,6 +263,7 @@ public class GameManager : MonoBehaviour
 
     void DrawTrajectory()
     {
+
         trajectoryLine.positionCount = trajectoryPoints;
 
         // Convert degrees to radians because Mathf.Sin/Cos use radians
@@ -251,7 +283,33 @@ public class GameManager : MonoBehaviour
 
             Vector3 point = castPoint.position + new Vector3(x, y, 0);
 
+            point.z = castPoint.position.z;
+
             trajectoryLine.SetPosition(i, point);
         }
+
     }
+
+    private Vector2 GetPointerPosition()
+    {
+        if (Input.touchCount > 0)
+        {
+            return Input.GetTouch(0).position;
+        }
+
+        return Input.mousePosition;
+    }
+
+    private bool PointerDown()
+    {
+        // Mobile
+        if (Input.touchCount > 0)
+        {
+            return Input.GetTouch(0).phase == TouchPhase.Began;
+        }
+
+        // Desktop
+        return Input.GetMouseButtonDown(0);
+    }
+
 }
