@@ -945,7 +945,7 @@ GameObject:
   - component: {fileID: 354199134}
   - component: {fileID: 354199133}
   m_Layer: 5
-  m_Name: Image
+  m_Name: AimArea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2496,7 +2496,7 @@ MonoBehaviour:
   powerStartX: 0
   powerEndX: 1920
   soundEffects: {fileID: 834257579}
-  aimingArea: {fileID: 0}
+  aimingArea: {fileID: 354199131}
 --- !u!4 &948049479
 Transform:
   m_ObjectHideFlags: 0
